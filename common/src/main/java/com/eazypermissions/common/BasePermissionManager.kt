@@ -77,12 +77,15 @@ abstract class BasePermissionManager : Fragment() {
             ) != PackageManager.PERMISSION_GRANTED
         }.toTypedArray()
 
+        val showRationalePermissions = notGranted.filter {
+            shouldShowRequestPermissionRationale(it)
+        }
+
         when {
-            notGranted.isEmpty() ->
-                onPermissionResult(PermissionResult.PermissionGranted(requestId))
-            notGranted.any { shouldShowRequestPermissionRationale(it) } -> {
+            notGranted.isEmpty() -> onPermissionResult(PermissionResult.PermissionGranted(requestId))
+            showRationalePermissions.isNotEmpty() -> {
                 rationalRequest[requestId] = true
-                onPermissionResult(PermissionResult.ShowRational(requestId))
+                onPermissionResult(PermissionResult.ShowRational(requestId, showRationalePermissions))
             }
             else -> {
                 requestPermissions(notGranted, requestId)
